@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ringsaturn/gin-timeout"
 	timeout "github.com/ringsaturn/gin-timeout"
 )
 
