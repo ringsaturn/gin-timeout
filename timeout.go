@@ -2,6 +2,7 @@ package timeout
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -54,6 +55,7 @@ func Timeout(opts ...Option) gin.HandlerFunc {
 			defer func() {
 				if p := recover(); p != nil {
 					panicChan <- p
+					c.Abort()
 				}
 			}()
 			c.Next()
@@ -63,7 +65,7 @@ func Timeout(opts ...Option) gin.HandlerFunc {
 		var err error
 		select {
 		case p := <-panicChan:
-			panic(p)
+			fmt.Println("panic", p)
 
 		case <-ctx.Done():
 			tw.mu.Lock()
@@ -73,7 +75,8 @@ func Timeout(opts ...Option) gin.HandlerFunc {
 			tw.ResponseWriter.WriteHeader(tw.ErrorHttpCode)
 			_, err = tw.ResponseWriter.Write([]byte(tw.DefaultMsg))
 			if err != nil {
-				panic(err)
+				// panic(err)
+				c.Abort()
 			}
 			c.Abort()
 
@@ -98,7 +101,8 @@ func Timeout(opts ...Option) gin.HandlerFunc {
 			tw.ResponseWriter.WriteHeader(tw.code)
 			_, err = tw.ResponseWriter.Write(buffer.Bytes())
 			if err != nil {
-				panic(err)
+				// panic(err)
+				c.Abort()
 			}
 			buffpool.PutBuff(buffer)
 		}
